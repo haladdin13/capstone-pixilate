@@ -1,6 +1,7 @@
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import validates
 
 from config import db, bcrypt
 
@@ -29,3 +30,27 @@ class User(db.Model, SerializerMixin):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
     
     serialize_rules = ('-_password_hash',)
+
+    @validates('username')
+    def validate_username(self, key, value):
+        if not isinstance(value, str) and len(value) == 0:
+            raise ValueError('Username must be a non-empty string.')
+        elif User.query.filter_by(username=value).first() is not None:
+            raise ValueError('Username is taken.')
+        return value
+    
+    @validates('email')
+    def validate_email(self, key, value):
+        if not isinstance(value, str):
+            raise ValueError('Email must be a string.')
+        elif len(value) == 0 or '@' not in value:
+            raise ValueError('Email must be a valid email address.')
+        elif User.query.filter_by(email=value).first() is not None:
+            raise ValueError('Email is taken.')
+        return value
+    
+    @validates('password')
+    def validate_password(self, key, value):
+        if not isinstance(value, str) and len(value) == 0:
+            raise ValueError('Password must be a non-empty string.')
+        return value
