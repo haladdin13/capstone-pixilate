@@ -12,8 +12,6 @@ function Navbar() {
             </Link>
             <ul>
                 <CustomLink to='/'>Home</CustomLink>
-                <CustomLink to='/signup'>Sign Up</CustomLink>
-                <CustomLink to='/login'>Login</CustomLink>
             </ul>
         </nav>
     )

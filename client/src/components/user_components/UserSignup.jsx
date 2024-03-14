@@ -8,11 +8,11 @@ function UserSignup(){
 
     const navigate = useNavigate()
     
-    const SignupTextInput = ({ lable, ...props }) => {
+    const SignupTextInput = ({ label, ...props }) => {
         const [field, meta] = useField(props)
         return (
             <div className="form-group">
-                <lable htmlFor={props.id || props.name}>{lable}</lable>
+                <label htmlFor={props.id || props.name}>{label}</label>
                 <input className='text-input' {...field} {...props} />
                 {meta.touched && meta.error ? (
                     <div className="error">{meta.error}</div>
@@ -58,9 +58,9 @@ function UserSignup(){
             
             >
                 <Form className='SubmitForm'>
-                    <SignupTextInput type="text" name="username" lable="Username" />
-                    <SignupTextInput type="email" name="email" lable="Email" />
-                    <SignupTextInput type="password" name="password" lable="Password" />
+                    <SignupTextInput type="text" name="username" label="Username" />
+                    <SignupTextInput type="email" name="email" label="Email" />
+                    <SignupTextInput type="password" name="password" label="Password" />
                     <button type="submit">Submit</button>
                 </Form>
             </Formik>

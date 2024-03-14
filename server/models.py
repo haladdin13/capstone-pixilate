@@ -15,6 +15,7 @@ class User(db.Model, SerializerMixin):
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     _password_hash = db.Column(db.String)
+    user_avatar = db.Column(db.String)
 
     @hybrid_property
     def password_hash(self):

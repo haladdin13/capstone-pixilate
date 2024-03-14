@@ -2,17 +2,19 @@ import React from 'react';
 import {Formik, Form, useField} from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../UserContext';
 
 //Formik setup for Login Form
 function UserLogin(){
 
     const navigate = useNavigate()
+    const {currentUser, setCurrentUser} = useUser();
     
-    const SignupTextInput = ({ lable, ...props }) => {
+    const SignupTextInput = ({ label, ...props }) => {
         const [field, meta] = useField(props)
         return (
             <div className="form-group">
-                <lable htmlFor={props.id || props.name}>{lable}</lable>
+                <label htmlFor={props.id || props.name}>{label}</label>
                 <input className='text-input' {...field} {...props} />
                 {meta.touched && meta.error ? (
                     <div className="error">{meta.error}</div>
@@ -46,6 +48,7 @@ function UserLogin(){
                     .then(res => res.json())
                     .then(values => {
                         console.log(values)
+                        setCurrentUser(values)
                         navigate('/')
                     })
                     .then( setSubmitting(false), resetForm() );
@@ -55,8 +58,8 @@ function UserLogin(){
             
             >
                 <Form className='LoginForm'>
-                    <SignupTextInput type="text" name="username" lable="Username" />
-                    <SignupTextInput type="password" name="password" lable="Password" />
+                    <SignupTextInput type="text" name="username" label="Username" />
+                    <SignupTextInput type="password" name="password" label="Password" />
                     <button type="submit">Login</button>
                 </Form>
             </Formik>
