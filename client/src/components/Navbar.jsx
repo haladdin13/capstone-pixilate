@@ -12,6 +12,7 @@ function Navbar() {
             </Link>
             <ul>
                 <CustomLink to='/'>Home</CustomLink>
+                <CustomLink to='/palette-creator'>Palette Creator</CustomLink>
             </ul>
         </nav>
     )
