@@ -70,9 +70,12 @@ class Logout(Resource):
 api.add_resource(Logout, '/logout', endpoint='logout')
 
 
-allowed_endpoints = ['signup', 'login', 'check_session']
+allowed_endpoints = ['signup', 'login', 'check_session', 'palettes', 'colors', 'color_associations']
 @app.before_request
 def check_if_logged_in():
+    if request.method == "OPTIONS":
+        # Allow OPTIONS requests to pass through without authentication
+        return None  # Returning None allows the request to continue to the intended route
     if not session.get('user_id') and request.endpoint not in allowed_endpoints:
         return {'error': 'Unauthorized'}, 401
 
@@ -239,17 +242,19 @@ class ColorAssociationRes(Resource):
         json_data = request.get_json()
         palette_id = json_data.get('palette_id')
         color_ids = json_data.get('color_id')
-        color_id_list = [color_id for color_id in color_ids]
 
-        if not isinstance(color_id_list, list):
-            return make_response({'error': 'color_ids must be a list'}, 400)
+        if not isinstance(color_ids, list):
+            color_ids = [color_ids] if color_ids else []
+
+        if not color_ids:
+            return make_response({'error': 'Color IDs are required and must be a list'}, 404)
 
         palette = Palette.query.get(palette_id)
         if not palette:
             return make_response({'error': 'Palette not found'}, 404)
 
         for color_id in color_ids:
-            color = Color.query.get(color_id)
+            color = Color.query.filter(color_id == color_id).first()
             if not color:
 
                 return make_response({'error': f'Color with id {color_id} not found'}, 404)
