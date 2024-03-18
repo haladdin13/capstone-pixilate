@@ -70,7 +70,7 @@ class Logout(Resource):
 api.add_resource(Logout, '/logout', endpoint='logout')
 
 
-allowed_endpoints = ['signup', 'login', 'check_session', 'palettes', 'colors', 'color_associations']
+allowed_endpoints = ['signup', 'login', 'check_session', 'palettes', 'colors', 'color_associations', 'color_associations_palette_id', 'colors_id']
 @app.before_request
 def check_if_logged_in():
     if request.method == "OPTIONS":
@@ -231,6 +231,53 @@ class ColorResource(Resource):
 api.add_resource(ColorResource, '/colors', endpoint='colors')
 
 
+#Get a color by ID
+
+class ColorID(Resource):
+    def get(self, id):
+        color = Color.query.filter(Color.id == id).first()
+
+        if color:
+            response = make_response(color.to_dict(), 200)
+        else:
+            response = make_response({'error': 'Color not found'}, 404)
+
+        return response
+    
+    def patch(self, id):
+
+        json_data = request.get_json()
+
+        color = Color.query.filter(Color.id == id).first()
+        if color:
+            color.hex_code = json_data['hex_code']
+            color.usage_frequency = json_data['usage_frequency']
+
+            db.session.commit()
+
+            response = make_response(color.to_dict(), 200)
+
+            return response
+        
+        return make_response({'error': 'Color not found'}, 404)
+    
+    def delete(self, id):
+
+        color = Color.query.filter(Color.id == id).first()
+
+        if color:
+            db.session.delete(color)
+            db.session.commit()
+
+            response = make_response(color.to_dict(), 200)
+
+            return response
+        
+        return make_response({'error': 'Color not found'}, 404)
+    
+api.add_resource(ColorID, '/colors/<int:id>', endpoint='colors_id')
+
+
 #Get/Post Color Association
 
 class ColorAssociationRes(Resource):
@@ -275,6 +322,29 @@ class ColorAssociationRes(Resource):
     
 api.add_resource(ColorAssociationRes, '/color_associations', endpoint='color_associations')
 
+#Get Color Association by Palette ID
+
+class ColorAssociationByPaletteID(Resource):
+    def get(self, id):
+        color_association_list = [color_association.to_dict() for color_association in ColorAssociation.query.filter(ColorAssociation.palette_id == id).all()]
+        return make_response(color_association_list, 200)
+    
+    def delete(self, id):
+
+        color_association = ColorAssociation.query.filter(ColorAssociation.palette_id == id).first()
+
+        if color_association:
+            db.session.delete(color_association)
+            db.session.commit()
+
+            response = make_response(color_association.to_dict(), 200)
+
+        else:
+            response = make_response({'error': 'Color Association not found'}, 404)
+
+        return response
+    
+api.add_resource(ColorAssociationByPaletteID, '/color_associations/palette/<int:id>', endpoint='color_associations_palette_id')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

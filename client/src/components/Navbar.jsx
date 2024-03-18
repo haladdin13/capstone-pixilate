@@ -13,6 +13,7 @@ function Navbar() {
             <ul>
                 <CustomLink to='/'>Home</CustomLink>
                 <CustomLink to='/palette-creator'>Palette Creator</CustomLink>
+                <CustomLink to='/palettes'>Gallery</CustomLink>
             </ul>
         </nav>
     )

@@ -8,6 +8,7 @@ import UserSignup from "./user_components/UserSignup";
 import UserLogin from "./user_components/UserLogin";
 import Home from "./Home";
 import PaletteCreation from "./PaletteCreation";
+import PaletteGallery from "./PaletteGallery";
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
               <Route path="/login" element={<UserLogin />} />
               <Route path="/" element={<Home />} />
               <Route path="/palette-creator" element={<PaletteCreation />} />
+              <Route path="/palettes" element={<PaletteGallery />} />
             </Routes>
           </BrowserRouter>
         </div>
