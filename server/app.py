@@ -70,7 +70,7 @@ class Logout(Resource):
 api.add_resource(Logout, '/logout', endpoint='logout')
 
 
-allowed_endpoints = ['signup', 'login', 'check_session', 'palettes', 'colors', 'color_associations', 'color_associations_palette_id', 'colors_id']
+allowed_endpoints = ['signup', 'login', 'check_session', 'palettes', 'colors', 'color_associations', 'color_associations_palette_id', 'colors_id', 'palettes_id']
 @app.before_request
 def check_if_logged_in():
     if request.method == "OPTIONS":

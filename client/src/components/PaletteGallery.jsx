@@ -3,11 +3,13 @@ import { useUser } from "./UserContext";
 import { Application, Graphics, Container, Assets, Sprite } from "pixi.js";
 import { colord } from "colord";
 import PaletteRenderer from "./paletteGallery_components/PaletteRenderer";
+import PaletteSearchTag from "./paletteGallery_components/PaletteTagSearch";
 
 function PaletteGallery() {
     const { currentUser } = useUser();
     const [palettes, setPalettes] = useState([]);
-    const [paletteColor, setPaletteColor] = useState([]);
+    const [filteredPalettes, setFilteredPalettes] = useState([]);
+    const [searchTag, setSearchTag] = useState('');
 
 
 
@@ -65,12 +67,27 @@ function PaletteGallery() {
         fetchPalettesAndColors()
     }, [currentUser.id]);
 
+    useEffect(() => {
+        if (searchTag) {
+            const filtered = palettes.filter(palette =>
+                palette.tags.toLowerCase().includes(searchTag.toLowerCase())
+            );
+            setFilteredPalettes(filtered);
+        } else {
+            setFilteredPalettes(palettes); // If no search term, display all palettes
+        }
+    }, [searchTag, palettes]);
+
+        const handleSearchChange = (tag) => {
+            setSearchTag(tag)
+        }
 
     
     return (
         <div>
             <h1>Palette Gallery</h1>
-            {palettes.map(palette => (
+            <PaletteSearchTag onSearchChange={handleSearchChange}/>
+            {filteredPalettes.map(palette => (
                 <div key={palette.id}>
                     <h2>{palette.title}</h2>
                     <p>{palette.description}</p>
