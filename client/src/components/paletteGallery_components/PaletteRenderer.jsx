@@ -8,6 +8,8 @@ function PaletteRenderer({ palette }) {
 
             (async () => {
 
+                console.log(palette.colors)
+
                 if (!palette || !containerRef.current) return;
 
 
@@ -15,7 +17,7 @@ function PaletteRenderer({ palette }) {
                 await app.init({ 
                     background: '#FFFFFF',
                     width: 370,
-                    height: 50
+                    height: 133
                 });
 
                 containerRef.current.appendChild(app.canvas);

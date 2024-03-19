@@ -5,6 +5,7 @@
 # Remote library imports
 from flask import request, make_response, session
 from flask_restful import Resource
+from sqlalchemy.sql import func
 
 # Local imports
 from config import app, db, api
@@ -70,7 +71,7 @@ class Logout(Resource):
 api.add_resource(Logout, '/logout', endpoint='logout')
 
 
-allowed_endpoints = ['signup', 'login', 'check_session', 'palettes', 'colors', 'color_associations', 'color_associations_palette_id', 'colors_id', 'palettes_id']
+allowed_endpoints = ['signup', 'login', 'logout', 'check_session', 'palettes', 'colors', 'color_associations', 'color_associations_palette_id', 'colors_id', 'palettes_id', 'users', 'user_id', 'palettes_user_id', 'color_associations_id', 'recommended_palettes']
 @app.before_request
 def check_if_logged_in():
     if request.method == "OPTIONS":
@@ -87,6 +88,39 @@ def index():
     return '<h1>Project Server</h1>'
 
 
+# #Get All Users
+    
+class Users(Resource):
+    def get(self):
+        user_list = [user.to_dict() for user in User.query.all()]
+        
+        response = make_response(user_list, 200)
+
+        return response
+
+api.add_resource(Users, '/users', endpoint='users')
+
+
+
+# #Get a user by ID
+
+class UserID(Resource):
+    def get(self, id):
+
+        user = User.query.filter(User.id == id).first()
+
+        if user:
+            response = make_response(user.to_dict(), 200)
+
+            return response
+        else:
+            response = make_response({'error': 'User not found'}, 404)
+
+            return response
+        
+
+
+api.add_resource(UserID, '/user/<int:id>', endpoint='user_id')
 
 
 #Get all palettes
@@ -145,16 +179,40 @@ class PaletteID(Resource):
         palette = Palette.query.filter(Palette.id == id).first()
 
         if palette:
-            palette.title = json_data['title']
-            palette.description = json_data['description']
-            palette.tags = json_data['tags']
-            palette.likes = json_data['likes']
-            palette.public = json_data['public']
-            palette.user_id = json_data['user_id']
+            palette.title = json_data.get('title', palette.title)
+            palette.description = json_data.get('description', palette.description)
+            palette.tags = json_data.get('tags', palette.tags)
+            palette.likes = json_data.get('likes', palette)
+            palette.public = json_data.get('public', palette)
+            palette.user_id = json_data.get('user_id', palette.user_id)
+
+            submitted_colors = set(json_data.get('colors', []))
+
+            existing_assoc = {assoc.color.hex_code: assoc for assoc in palette.color_associations}
+
+            # color_to_add = submitted_colors - existing_assoc
+            # color_to_remove = existing_assoc - submitted_colors
+
+            for assoc in list(palette.color_associations):
+                if assoc.color.hex_code not in submitted_colors:
+                    db.session.delete(assoc)
+                else:
+                    submitted_colors.remove(assoc.color.hex_code)
+
+            for hex_code in submitted_colors:
+                color = Color.query.filter_by(hex_code=hex_code).first()
+                if not color:
+                    color = Color(hex_code=hex_code)
+                    db.session.add(color)
+                    db.session.flush()
+    
+
+                new_assoc = ColorAssociation(palette_id=id, color_id=color.id)
+                db.session.add(new_assoc)
 
             db.session.commit()
 
-            response = make_response(palette.to_dict(), 200)
+            response = make_response(palette.to_dict_with_colors, 200)
         else:
             response = make_response({'error': 'Palette not found'}, 404)
 
@@ -167,7 +225,7 @@ class PaletteID(Resource):
             db.session.delete(palette)
             db.session.commit()
 
-            response = make_response(palette.to_dict(), 200)
+            response = make_response({'message': 'Delete Successful'}, 200)
         else:
             response = make_response({'error': 'Palette not found'}, 404)
 
@@ -181,7 +239,8 @@ api.add_resource(PaletteID, '/palettes/<int:id>', endpoint='palettes_id')
 
 class PaletteGalleryByUserID(Resource):
     def get(self, id):
-        palette_list = [palette.to_dict() for palette in Palette.query.filter(Palette.user_id == id).all()]
+        palettes = Palette.query.filter(Palette.user_id == id).all()
+        palette_list = [palette.to_dict_with_colors for palette in palettes]
         
         response = make_response(palette_list, 200)
 
@@ -250,8 +309,10 @@ class ColorID(Resource):
 
         color = Color.query.filter(Color.id == id).first()
         if color:
-            color.hex_code = json_data['hex_code']
-            color.usage_frequency = json_data['usage_frequency']
+            if 'hex_code' in json_data:
+                color.hex_code = json_data['hex_code']
+            if 'usage_frequency' in json_data:
+                color.usage_frequency = json_data['usage_frequency']
 
             db.session.commit()
 
@@ -317,10 +378,84 @@ class ColorAssociationRes(Resource):
             return make_response(color_association.to_dict(), 201)
         # else:
         #     return make_response({'error': 'No colors found'}, 404)
-        
-
     
 api.add_resource(ColorAssociationRes, '/color_associations', endpoint='color_associations')
+
+
+#Get Color Association By ID
+
+class ColorAssociationByID(Resource):
+    def get(self, id):
+        color_association = ColorAssociation.query.filter(ColorAssociation.id == id).first()
+
+        if color_association:
+            response = make_response(color_association.to_dict(), 200)
+        else:
+            response = make_response({'error': 'Color Association not found'}, 404)
+
+        return response
+    
+    def patch(self, id):
+        json_data = request.get_json()
+        color_associations = ColorAssociation.query.filter(ColorAssociation.palette_id == id).all()
+        color_ids = json_data.get('color_id')
+        palette_id = json_data.get('palette_id')
+        if color_associations:
+            for color_association in color_associations:
+                # Assuming the JSON data contains a mapping of color_id to combined_scores
+                if str(color_association.color_id) in json_data:
+                    color_association.combined_scores = json_data[str(color_association.color_id)]['combined_scores']
+            
+            if not isinstance(color_ids, list):
+                color_ids = [color_ids] if color_ids else []
+
+            if not color_ids:
+                return make_response({'error': 'Color IDs are required and must be a list'}, 404)
+
+            palette = Palette.query.get(palette_id)
+            if not palette:
+                return make_response({'error': 'Palette not found'}, 404)
+        
+            for color_id in color_ids:
+                color = Color.query.filter(color_id == color_id).first()
+                if not color:
+
+                    return make_response({'error': f'Color with id {color_id} not found'}, 404)
+
+                existing_association = ColorAssociation.query.filter_by(palette_id=palette_id, color_id=color_id).first()
+                if existing_association:
+                    continue
+
+                combined_scores = (1 + palette.likes / 100) * color.usage_frequency
+                color_association = ColorAssociation(palette_id=palette_id, color_id=color_id, combined_scores=combined_scores)
+
+
+                return make_response(color_association.to_dict(), 201)
+            
+            
+            db.session.commit()
+            
+            updated_color_associations = [ca.to_dict() for ca in color_associations]
+            return make_response((updated_color_associations), 200)
+        else:
+            return make_response({'error': 'No color associations found for the given palette ID'}, 404)
+        
+    def delete(self, id):
+        color_association = ColorAssociation.query.filter(ColorAssociation.id == id).first()
+
+        if color_association:
+            db.session.delete(color_association)
+            db.session.commit()
+
+            response = make_response(color_association.to_dict(), 200)
+
+        else:
+            response = make_response({'error': 'Color Association not found'}, 404)
+
+        return response
+    
+api.add_resource(ColorAssociationByID, '/color_associations/<int:id>', endpoint='color_associations_id')
+    
 
 #Get Color Association by Palette ID
 
@@ -328,6 +463,35 @@ class ColorAssociationByPaletteID(Resource):
     def get(self, id):
         color_association_list = [color_association.to_dict() for color_association in ColorAssociation.query.filter(ColorAssociation.palette_id == id).all()]
         return make_response(color_association_list, 200)
+    
+
+    def patch(self, id):
+        incomingData = request.get_json()
+        incomingColorIdsRaw = incomingData.get('color_id', [])
+
+        if not isinstance(incomingColorIdsRaw, list):
+            incomingColorIdsRaw = [incomingColorIdsRaw] if incomingColorIdsRaw else []
+
+        incomingColorIds = set(incomingColorIdsRaw)
+        
+
+        currentAssociations = ColorAssociation.query.filter_by(palette_id=id).all()
+        existingColorIds = set(assoc.color_id for assoc in currentAssociations)
+
+        colorsToAdd = incomingColorIds.difference(existingColorIds)
+        colorsToRemove = existingColorIds.difference(incomingColorIds)
+
+        ColorAssociation.query.filter(ColorAssociation.palette_id == id, ColorAssociation.color_id.in_(colorsToRemove)).delete(synchronize_session='fetch')
+
+        for color_id in colorsToAdd:
+            newAssoc = ColorAssociation(palette_id=id, color_id=color_id)
+            db.session.add(newAssoc)
+
+
+
+        db.session.commit()
+        return {'message': 'Color associations updated successfully'}, 200
+            
     
     def delete(self, id):
 
@@ -345,6 +509,33 @@ class ColorAssociationByPaletteID(Resource):
         return response
     
 api.add_resource(ColorAssociationByPaletteID, '/color_associations/palette/<int:id>', endpoint='color_associations_palette_id')
+
+
+#Query to get top 5 recommended palettes by combined score
+
+class RecommendedPalettes(Resource):
+    def get(self):
+        recommended_palletes_query = db.session.query(
+            Palette,
+            func.sum(ColorAssociation.combined_scores).label('combined_score')
+        ).join(
+            ColorAssociation
+        ).group_by(
+            Palette.id
+        ).order_by(
+            func.sum(ColorAssociation.combined_scores).desc()
+        ).limit(5).all()
+
+        recommended_palletes = [{
+            'id': palette.id,
+            'title': palette.title,
+            'description': palette.description,
+            'colors': [assoc.color.hex_code for assoc in palette.color_associations]
+        } for palette, combined_score in recommended_palletes_query]
+
+        return make_response({'palettes': recommended_palletes}, 200)
+    
+api.add_resource(RecommendedPalettes, '/recommended_palettes', endpoint='recommended_palettes')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

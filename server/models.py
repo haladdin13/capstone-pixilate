@@ -84,6 +84,15 @@ class Palette(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
+    #PROPERTIES
+
+    @property
+    def to_dict_with_colors(self):
+        palette_dict = self.to_dict()
+        colors = [association.color.to_dict() for association in self.color_associations]
+        palette_dict['colors'] = colors
+        return palette_dict
+
     #RELATIONSHIPS
 
     user = db.relationship('User', back_populates='palettes')
