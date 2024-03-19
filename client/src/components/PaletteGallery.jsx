@@ -6,6 +6,7 @@ import PaletteRenderer from "./paletteGallery_components/PaletteRenderer";
 import PaletteSearchTag from "./paletteGallery_components/PaletteTagSearch";
 import AccountMenu from "./home_components/AccountMenu";
 import { Link } from "react-router-dom";
+import { normalizePaletteColors } from './Utils'
 
 function PaletteGallery() {
     const { currentUser } = useUser();
@@ -16,7 +17,7 @@ function PaletteGallery() {
 
 
     useEffect(() => {
-        const fetchPalettesAndColors = async () => {
+        const fetchPalettes = async () => {
             try {
                 // Fetch palettes
                 const paletteResponse = await fetch(`http://localhost:5555/palettes`, {
@@ -27,46 +28,17 @@ function PaletteGallery() {
                     credentials: 'include',
                 });
 
-                const palettesData = await paletteResponse.json();
+                let palettesData = await paletteResponse.json();
 
-                // For each palette, fetch its colors
-                const palettesWithColors = await Promise.all(palettesData.map(async (palette) => {
-                    const colorAssocResponse = await fetch(`http://localhost:5555/color_associations/palette/${palette.id}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include',
-                    });
 
-                    const colorAssocData = await colorAssocResponse.json();
+                setPalettes(palettesData);
 
-                    const colors = await Promise.all(colorAssocData.map(async ({color_id}) => {
-                        const colorResponse = await fetch(`http://localhost:5555/colors/${color_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            credentials: 'include',
-                        });
-
-                        const colorData = await colorResponse.json();
-                        console.log(colorData.hex_code)
-                        return colorData.hex_code;
-                        
-                    }))
-
-                    return { ...palette, colors }
-                    
-                }));
-                
-                setPalettes(palettesWithColors);
             } catch (error) {
                 console.error("Fetching palettes and colors failed:", error);
             }
         };
 
-        fetchPalettesAndColors()
+        fetchPalettes()
     }, [currentUser.id]);
 
     useEffect(() => {
@@ -90,18 +62,22 @@ function PaletteGallery() {
     
     return (
         <div>
-            <h1>Palette Gallery</h1>
-            <PaletteSearchTag onSearchChange={handleSearchChange}/>
-            {filteredPalettes.map(palette => (
+        <h1>Palette Gallery</h1>
+        <PaletteSearchTag onSearchChange={handleSearchChange}/>
+        {filteredPalettes.map(palette => {
+            const normalizedPalette = normalizePaletteColors(palette);
+            console.log(normalizedPalette);
+            return (
                 <div key={palette.id}>
                     <Link to={`/palettes/${palette.id}`}>
                         <h2>{palette.title}</h2>
                     </Link>
                     <p>{palette.description}</p>
-                    <PaletteRenderer palette={palette} />
+                    <PaletteRenderer palette={normalizedPalette} />
                 </div>
-            ))}
-        </div>
+            );
+        })}
+    </div>
     );
 }
 

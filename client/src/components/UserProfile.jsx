@@ -3,6 +3,7 @@ import { useUser } from "./UserContext";
 import { Link, useParams } from "react-router-dom";
 
 import PaletteRenderer from "./paletteGallery_components/PaletteRenderer";
+import { normalizePaletteColors } from "./Utils";
 
 
 function UserProfile(){
@@ -14,7 +15,7 @@ function UserProfile(){
 
 
     useEffect(() => {
-        const fetchPalettesAndColors = async () => {
+        const fetchPalettes = async () => {
             try {
                 // Fetch palettes
                 const paletteResponse = await fetch(`http://localhost:5555/palettes/user/${id}`, {
@@ -25,46 +26,17 @@ function UserProfile(){
                     credentials: 'include',
                 });
 
-                const palettesData = await paletteResponse.json();
+                let palettesData = await paletteResponse.json();
 
-                // For each palette, fetch its colors
-                const palettesWithColors = await Promise.all(palettesData.map(async (palette) => {
-                    const colorAssocResponse = await fetch(`http://localhost:5555/color_associations/palette/${palette.id}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include',
-                    });
-
-                    const colorAssocData = await colorAssocResponse.json();
-
-                    const colors = await Promise.all(colorAssocData.map(async ({color_id}) => {
-                        const colorResponse = await fetch(`http://localhost:5555/colors/${color_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            credentials: 'include',
-                        });
-
-                        const colorData = await colorResponse.json();
-                        console.log(colorData.hex_code)
-                        return colorData.hex_code;
-                        
-                    }))
-
-                    return { ...palette, colors }
-                    
-                }));
+                palettesData = palettesData.map(normalizePaletteColors)
+                setPalettes(palettesData)
                 
-                setPalettes(palettesWithColors);
             } catch (error) {
                 console.error("Fetching palettes and colors failed:", error);
             }
         };
 
-        fetchPalettesAndColors()
+        fetchPalettes()
     }, [id]);
 
     if (palettes.length === 0) {

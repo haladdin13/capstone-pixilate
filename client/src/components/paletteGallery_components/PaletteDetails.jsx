@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PaletteRenderer from "./PaletteRenderer";
 import { useUser } from "../UserContext";
+import { normalizePaletteColors } from "../Utils";
 
 function PaletteDetails() {
   const { id } = useParams();
@@ -21,36 +22,13 @@ function PaletteDetails() {
                     credentials: 'include',
                 });
 
-                const paletteData = await paletteResponse.json();
+                let paletteData = await paletteResponse.json();
+                console.log(paletteData.color_associations)
+                
+                
                 console.log(paletteData.user.id)
-
-                // For each palette, fetch its colors
-                    const colorAssocResponse = await fetch(`http://localhost:5555/color_associations/palette/${id}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include',
-                    });
-
-                    const colorAssocData = await colorAssocResponse.json();
-
-                    const colors = await Promise.all(colorAssocData.map(async ({color_id}) => {
-                        const colorResponse = await fetch(`http://localhost:5555/colors/${color_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            credentials: 'include',
-                        });
-
-                        const colorData = await colorResponse.json();
-                        console.log(colorData.hex_code)
-                        return colorData.hex_code;
-                        
-                    }))
-
-                    setPalette({...paletteData, colors});
+                paletteData = normalizePaletteColors(paletteData)
+                setPalette(paletteData);
                 
             } catch (error) {
                 console.error("Fetching palettes and colors failed:", error);

@@ -27,56 +27,74 @@ function PaletteSubmission({ colors, title, description, tags, id, onClearColors
         )
     }
 
-    const onSubmit = async (values, actions) => {
+    const onSubmit = async (values, { setSubmitting, resetForm }) => {
         setIsSubmitting(true);
+    
+        // Prepare palette details, excluding colors for now.
+        let paletteDetails = {
+            title: values.title,
+            description: values.description,
+            tags: values.tags,
+            public: values.public,
+            likes: values.likes,
+            user_id: currentUser.id,
+        };
+    
         const method = id ? 'PATCH' : 'POST';
         const paletteUrl = id ? `http://localhost:5555/palettes/${id}` : `http://localhost:5555/palettes`;
-        const colorAssocUrl = id ? `http://localhost:5555/color_associations/palette/${id}` : `http://localhost:5555/color_associations`;
-        const colorUrl = colors.id ? `http://localhost:5555/colors/${colors.id}` : `http://localhost:5555/colors`;
-
+    
         try {
-            let response = await fetch(`${paletteUrl}`, {
+
+            let response = await fetch(paletteUrl, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...values,
-                    user_id: currentUser.id,
-                }),
+                body: JSON.stringify(paletteDetails),
                 credentials: 'include',
             });
+    
+            let paletteData = await response.json();
 
-            const paletteData = await response.json();
-            
-            for (const hexCode of values.colors) {
-                response = await fetch(`${colorUrl}`, {
-                    method: colors.id ? 'PATCH' : 'POST',
+            if (id) {
+                await fetch(`http://localhost:5555/color_associations/palette/${paletteData.id}`, {
+                    method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ hex_code: hexCode }),
+                    credentials: 'include',
+                })
+            }
+    
+            await Promise.all(colors.map(async (colorHex) => {
+                let colorResponse = await fetch(`http://localhost:5555/colors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hex_code: colorHex }),
+                    credentials: 'include',
                 });
-                const colorData = await response.json();
-                console.log(colorData);
-
-                response = await fetch(`${colorAssocUrl}`, {
-                    method: method,
+                let colorData = await colorResponse.json();
+                
+                await fetch(`http://localhost:5555/color_associations`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         palette_id: paletteData.id,
                         color_id: colorData.id,
                     }),
+                    credentials: 'include',
                 });
-
-            }
-
+                
+            }));
+    
+    
             // Clear form and colors upon successful submission
-            actions.resetForm();
+            resetForm();
             onClearColors();
         } catch (error) {
-            console.error(error);
+            console.error("Submitting palette failed:", error);
         } finally {
             setIsSubmitting(false);
-            actions.setSubmitting(false);
+            setSubmitting(false);
         }
     };
+    
 
 
 
@@ -103,6 +121,10 @@ function PaletteSubmission({ colors, title, description, tags, id, onClearColors
                 <PaletteSubTextInput name="title" type="text" placeholder="Title" />
                 <PaletteSubTextInput name="description" type="text" placeholder="Description" />
                 <PaletteSubTextInput name="tags" type="text" placeholder="Tags" />
+                <label>
+                    <input type="checkbox" name="public" />
+                    Public
+                </label>
                 <button type="submit">Submit</button>
             {isSubmitting && <div>Saving Palette...</div>}
             </Form>

@@ -8,6 +8,8 @@ function PaletteRenderer({ palette }) {
 
             (async () => {
 
+                console.log(palette.colors)
+
                 if (!palette || !containerRef.current) return;
 
 
