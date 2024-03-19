@@ -37,7 +37,7 @@ function CurrentPalette({ colors, onAddColor, onRemoveColor, onClearColors}) {
             const containerWidth = app.screen.width;
 
             //Create square sprite
-            colors.forEach((colorHex, index) => {
+            (colors || []).forEach((colorHex, index) => {
                 const square = new Sprite(squareSprite)
                 square.tint = parseInt(colorHex.replace(/^#/, ''), 16)
                 

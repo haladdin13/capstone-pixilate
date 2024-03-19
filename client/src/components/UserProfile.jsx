@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect } from "react";
 import { useUser } from "./UserContext";
-import { Application, Graphics, Container, Assets, Sprite } from "pixi.js";
-import { colord } from "colord";
-import PaletteRenderer from "./paletteGallery_components/PaletteRenderer";
-import PaletteSearchTag from "./paletteGallery_components/PaletteTagSearch";
-import AccountMenu from "./home_components/AccountMenu";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
-function PaletteGallery() {
-    const { currentUser } = useUser();
+import PaletteRenderer from "./paletteGallery_components/PaletteRenderer";
+
+
+function UserProfile(){
+    const { currentUser, setCurrentUser } = useUser();
     const [palettes, setPalettes] = useState([]);
-    const [filteredPalettes, setFilteredPalettes] = useState([]);
-    const [searchTag, setSearchTag] = useState('');
+
+    const { id } = useParams();
 
 
 
@@ -19,7 +17,7 @@ function PaletteGallery() {
         const fetchPalettesAndColors = async () => {
             try {
                 // Fetch palettes
-                const paletteResponse = await fetch(`http://localhost:5555/palettes`, {
+                const paletteResponse = await fetch(`http://localhost:5555/palettes/user/${id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -67,32 +65,16 @@ function PaletteGallery() {
         };
 
         fetchPalettesAndColors()
-    }, [currentUser.id]);
-
-    useEffect(() => {
-        if (searchTag) {
-            const filtered = palettes.filter(palette =>
-                palette.tags.toLowerCase().includes(searchTag.toLowerCase())
-            );
-            setFilteredPalettes(filtered);
-        } else {
-            setFilteredPalettes(palettes); // If no search term, display all palettes
-        }
-    }, [searchTag, palettes]);
-
-        const handleSearchChange = (tag) => {
-            setSearchTag(tag)
-        }
+    }, [id]);
 
     if (palettes.length === 0) {
         return <div>Loading...</div>;
     }
-    
+
     return (
         <div>
-            <h1>Palette Gallery</h1>
-            <PaletteSearchTag onSearchChange={handleSearchChange}/>
-            {filteredPalettes.map(palette => (
+            <h1>User Profile</h1>
+            {palettes.map(palette => (
                 <div key={palette.id}>
                     <Link to={`/palettes/${palette.id}`}>
                         <h2>{palette.title}</h2>
@@ -102,7 +84,7 @@ function PaletteGallery() {
                 </div>
             ))}
         </div>
-    );
+    )
 }
 
-export default PaletteGallery;
+export default UserProfile;

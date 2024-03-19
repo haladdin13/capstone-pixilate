@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, useField } from 'formik';
 import * as Yup from 'yup';
 import { useUser } from '../UserContext';
 import { ColorMask } from 'pixi.js';
+import { useParams } from 'react-router-dom';
 
 
 // Formik setup for Palette Submission
 
 
-function PaletteSubmission({ colors, onClearColors }) {
+function PaletteSubmission({ colors, title, description, tags, id, onClearColors }) {
 
     const { currentUser, setCurrentUser } = useUser();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const PaletteSubTextInput = ({ label, ...props}) => {
         const [field, meta] = useField(props)
@@ -26,9 +28,15 @@ function PaletteSubmission({ colors, onClearColors }) {
     }
 
     const onSubmit = async (values, actions) => {
+        setIsSubmitting(true);
+        const method = id ? 'PATCH' : 'POST';
+        const paletteUrl = id ? `http://localhost:5555/palettes/${id}` : `http://localhost:5555/palettes`;
+        const colorAssocUrl = id ? `http://localhost:5555/color_associations/palette/${id}` : `http://localhost:5555/color_associations`;
+        const colorUrl = colors.id ? `http://localhost:5555/colors/${colors.id}` : `http://localhost:5555/colors`;
+
         try {
-            let response = await fetch(`http://localhost:5555/palettes`, {
-                method: 'POST',
+            let response = await fetch(`${paletteUrl}`, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...values,
@@ -39,16 +47,17 @@ function PaletteSubmission({ colors, onClearColors }) {
 
             const paletteData = await response.json();
             
-            for (const colorHex of colors) {
-                response = await fetch(`http://localhost:5555/colors`, {
-                    method: 'POST',
+            for (const hexCode of values.colors) {
+                response = await fetch(`${colorUrl}`, {
+                    method: colors.id ? 'PATCH' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ hex_code: colorHex }),
+                    body: JSON.stringify({ hex_code: hexCode }),
                 });
                 const colorData = await response.json();
+                console.log(colorData);
 
-                response = await fetch(`http://localhost:5555/color_associations`, {
-                    method: 'POST',
+                response = await fetch(`${colorAssocUrl}`, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         palette_id: paletteData.id,
@@ -64,19 +73,24 @@ function PaletteSubmission({ colors, onClearColors }) {
         } catch (error) {
             console.error(error);
         } finally {
+            setIsSubmitting(false);
             actions.setSubmitting(false);
         }
     };
 
+
+
     return (
         <Formik
+            enableReinitialize
             initialValues={{
-                title: '',
-                description: '',
-                tags: '',
+                title: title,
+                description: description,
+                tags: tags,
                 public: true,
                 likes: 0,
-                user_id: currentUser.id
+                user_id: currentUser.id,
+                colors: colors
             }}
             validationSchema={Yup.object({
                 title: Yup.string().required('Title is required'),
@@ -90,6 +104,7 @@ function PaletteSubmission({ colors, onClearColors }) {
                 <PaletteSubTextInput name="description" type="text" placeholder="Description" />
                 <PaletteSubTextInput name="tags" type="text" placeholder="Tags" />
                 <button type="submit">Submit</button>
+            {isSubmitting && <div>Saving Palette...</div>}
             </Form>
         </Formik>
     );

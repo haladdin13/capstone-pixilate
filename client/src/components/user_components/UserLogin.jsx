@@ -49,6 +49,7 @@ function UserLogin(){
                     .then(values => {
                         console.log(values)
                         setCurrentUser(values)
+                        sessionStorage.setItem('currentUser', JSON.stringify(values))
                         navigate('/')
                     })
                     .then( setSubmitting(false), resetForm() );

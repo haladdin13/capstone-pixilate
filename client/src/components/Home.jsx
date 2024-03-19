@@ -11,10 +11,7 @@ function Home() {
 
     return (
         <div>
-            <AccountMenu />
             <h1>Home</h1>
-            <h4>{user_name}</h4>
-            <p>Welcome to Pixilate {user_name}</p>
 
         </div>
     )

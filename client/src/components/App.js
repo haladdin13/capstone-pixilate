@@ -9,6 +9,9 @@ import UserLogin from "./user_components/UserLogin";
 import Home from "./Home";
 import PaletteCreation from "./PaletteCreation";
 import PaletteGallery from "./PaletteGallery";
+import UserProfile from "./UserProfile";
+import AccountMenu from "./home_components/AccountMenu";
+import PaletteDetails from "./paletteGallery_components/PaletteDetails";
 
 function App() {
 
@@ -16,6 +19,14 @@ function App() {
   const [logout, setLogout] = useState([])
   const [currentUser, setCurrentUser] = useState({})
 
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('currentUser');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setCurrentUser(user);
+    }
+  }, [])
 
 
 
@@ -25,12 +36,17 @@ function App() {
         <div className="App">
           <BrowserRouter>
             <Navbar />
+            <AccountMenu />
             <Routes>
               <Route path="/signup" element={<UserSignup />} />
               <Route path="/login" element={<UserLogin />} />
               <Route path="/" element={<Home />} />
               <Route path="/palette-creator" element={<PaletteCreation />} />
+              <Route path="/palette-creator/:id" element={<PaletteCreation />} />
               <Route path="/palettes" element={<PaletteGallery />} />
+              <Route path="/palettes/:id" element={<PaletteDetails/>} />
+              <Route path="/users/:id" element={<UserProfile />}/>
+              <Route path="/logout" element={<AccountMenu />} />
             </Routes>
           </BrowserRouter>
         </div>

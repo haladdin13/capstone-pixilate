@@ -22,14 +22,16 @@ function AccountMenu() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include',
         })
         .then(res => res.json())
         .then(data => {
              console.log(data)
+             sessionStorage.removeItem('currentUser')
              setCurrentUser({})
              navigate('/')
-        })
+        }, [])
     }
 
     
@@ -42,6 +44,9 @@ function AccountMenu() {
                 <div>
                     <button onClick={loggingOut}>
                         <Link to="/logout">Logout</Link>
+                    </button>
+                    <button>
+                        <Link to={`/users/${currentUser.id}`}>User Profile</Link>
                     </button>
                 </div>
             )
@@ -64,14 +69,14 @@ function AccountMenu() {
     return (
         <div>
             <button onClick={toggleMenu} className="avatar-button" style={{ border: 'none', background: 'none' }}>
-                <img src={currentUser?.avatarUrl || 'default-avatar.png'} alt="User Avatar" className="user-avatar" />
+                <img src={currentUser?.avatarUrl || '/default-avatar.png'} alt="User Avatar" className="user-avatar" />
             </button>
 
             {isOpen && (
                 <div className="dropdown-menu">
                     <div className="dropdown-menu-header">
                         <div className="dropdown-menu-header-title">
-                            <h3>Account</h3>
+                            <h3>{currentUser.username}</h3>
                         </div>
                         <div className="dropdown-menu-header-close" onClick={toggleMenu}>
                             <i className="fas fa-times"></i>
