@@ -6,10 +6,7 @@ import {Link, useMatch, useResolvedPath} from 'react-router-dom';
 
 function Navbar() {
     return(
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-            <Link to='/' className='site-logo'>
-                Pixilate
-            </Link>
+        <nav className="navbar">
             <ul>
                 <CustomLink to='/'>Home</CustomLink>
                 <CustomLink to='/palette-creator'>Palette Creator</CustomLink>

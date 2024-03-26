@@ -73,12 +73,19 @@ function PaletteCreation() {
 
 
     return (
-        <div>
-            <h1>Palette Creation</h1>
-            <CurrentPalette colors={colors} onAddColor={addColor} onRemoveColor={removeColor} onClearColors={clearColors} />
-            <PaletteSubmission colors={colors} description={description} title={title} tags={tags} id={id} onClearColors={clearColors}/>
-            <ColorWheel onColorSelect={handleColorSelect}/>
-            
+        <div className="palette-creation-container">
+            <div className="palette-creation-header">
+                <h1>Palette Creation</h1>
+            </div>
+            <div className="submission-section">
+                <PaletteSubmission colors={colors} description={description} title={title} tags={tags} id={id} onClearColors={clearColors}/>
+            </div>
+            <div className="palette-section">
+                <CurrentPalette colors={colors} onAddColor={addColor} onRemoveColor={removeColor} onClearColors={clearColors} />
+            </div>
+            <div className="color-wheel-section">
+                <ColorWheel onColorSelect={handleColorSelect}/>
+            </div>
         </div>
     )
 }

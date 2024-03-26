@@ -30,7 +30,6 @@ function PaletteSubmission({ colors, title, description, tags, id, onClearColors
     const onSubmit = async (values, { setSubmitting, resetForm }) => {
         setIsSubmitting(true);
     
-        // Prepare palette details, excluding colors for now.
         let paletteDetails = {
             title: values.title,
             description: values.description,

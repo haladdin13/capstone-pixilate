@@ -118,6 +118,21 @@ class UserID(Resource):
 
             return response
         
+    def patch(self,id):
+        json_data = request.get_json()
+
+        try:
+            user = User.query.filter(User.id == id).first()
+            user.username = json_data['username']
+            user.email = json_data['email']
+            db.session.commit()
+
+            response = make_response(user.to_dict(), 200)
+
+            return response
+        except Exception as e:
+            return make_response({'error': str(e) }, 422)
+        
 
 
 api.add_resource(UserID, '/user/<int:id>', endpoint='user_id')

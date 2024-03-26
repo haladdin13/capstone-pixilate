@@ -20,7 +20,7 @@ const ColorWheel = ({ onColorSelect }) => {
             // Create a PixiJS application.
             const app = new Application();
             // Intialize the application.
-            await app.init({ background: '#FFFFFF', resizeTo: window });
+            await app.init({ background: '#FFFFFF', width: '800', height: '550' });
 
             if(containerRef.current) {
                 containerRef.current.appendChild(app.canvas);
