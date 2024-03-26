@@ -17,7 +17,7 @@ function PaletteRenderer({ palette }) {
 
 
                 await app.init({ 
-                    background: '#FFFFFF',
+                    background: '#f9f9f9',
                     width: 370,
                     height: 133
                 });
@@ -26,6 +26,7 @@ function PaletteRenderer({ palette }) {
 
                 await Assets.load('/square.png').then((squareSprite) => {
                     if (!mountedRef.current) return;
+                    containerRef.current.innerHTML = ''
                     containerRef.current.appendChild(app.canvas);
 
                     const container = new Container();

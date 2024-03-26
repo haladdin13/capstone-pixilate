@@ -19,7 +19,7 @@ function CurrentPalette({ colors, onAddColor, onRemoveColor, onClearColors}) {
             
             const app = new Application();
             await app.init({ 
-                background: '#FFFFFF',
+                background: '#f9f9f9',
                 width: 370,
                 height: 100
             });
@@ -80,8 +80,12 @@ function CurrentPalette({ colors, onAddColor, onRemoveColor, onClearColors}) {
 
     }, [colors])
 
-    return <div ref={containerRef} style={{ width: '100%', height: 'auto', overflow: 'auto', maxWidth: '800px' }}>
-    </div>
+    return (
+        <div>
+            <h4>Current Palette</h4>
+            <div ref={containerRef} style={{ width: '100%', height: 'auto', overflow: 'auto', maxWidth: '800px' }} />
+        </div> 
+    )
 
 }
 

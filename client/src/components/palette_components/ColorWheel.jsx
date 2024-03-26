@@ -20,18 +20,20 @@ const ColorWheel = ({ onColorSelect }) => {
             // Create a PixiJS application.
             const app = new Application();
             // Intialize the application.
-            await app.init({ background: '#FFFFFF', width: '800', height: '550' });
+            await app.init({ background: '#f9f9f9', width: '800', height: '550' });
 
             if(containerRef.current) {
+                containerRef.current.innerHTML = ''
                 containerRef.current.appendChild(app.canvas);
             }
 
+            app.stage.removeChildren();
             const graphics = new Graphics();
             app.stage.addChild(graphics);
 
             // Rendering color wheel
             const radius = 250
-            const center = { 
+            const center = {
                 x: app.screen.width / 2,
                 y: app.screen.height / 2
             }
@@ -49,7 +51,7 @@ const ColorWheel = ({ onColorSelect }) => {
 
                 let hue = angle
 
-                const hsvColors = colord({ h: hue, s: saturation, v: value, a: 1 }).toHex();
+                const hsvColors = colord({ h: hue, s: saturation, v: value }).toHex();
                 graphics.fill(hsvColors);
                 
                 // Draw the color wheel outline
@@ -102,13 +104,21 @@ const ColorWheel = ({ onColorSelect }) => {
         colorWheelLogic();
 
 
-}, [])
+}, [saturation, value])
 
     return (
-        <div ref={containerRef}>
-            <h4>Current Palette</h4>
-            <input type='range' min='0' max='100' value={saturation} onChange={(e) => setSaturation(e.target.value)} />
-            <input type='range' min='0' max='100' value={value} onChange={(e) => setValue(e.target.value)} />
+        <div>
+            <div>
+                <h4>Saturation</h4>
+                <input type='range' min='0' max='100' value={saturation} onChange={(e) => setSaturation(e.target.value)} />
+                <h5>{saturation}</h5>
+            </div>
+            <div>
+                <h4>Value</h4>
+                <input type='range' min='0' max='100' value={value} onChange={(e) => setValue(e.target.value)} />
+                <h5>{value}</h5>
+            </div>
+            <div ref={containerRef} />
         </div>
     )
 
