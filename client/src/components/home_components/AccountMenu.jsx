@@ -1,7 +1,5 @@
 import React, {useState, useEffect} from "react";
 import { useUser } from "../UserContext";
-import UserSignup from "../user_components/UserSignup";
-import UserLogin from "../user_components/UserLogin";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom"
 
@@ -41,18 +39,21 @@ function AccountMenu() {
     function isLoggedIn() {
         if (currentUser.username) {
             return (
-                <div>
+                <div className="dropdown-menu">
                     <button onClick={loggingOut}>
                         <Link to="/logout">Logout</Link>
                     </button>
                     <button>
                         <Link to={`/users/${currentUser.id}`}>User Profile</Link>
                     </button>
+                    <button>
+                        <Link to="/user-settings">User Settings</Link>
+                    </button>
                 </div>
             )
         } else {
             return (
-                <div>
+                <div className="dropdown-menu">
                     <button>
                         <Link to="/login">Login</Link>
                     </button>
@@ -76,7 +77,7 @@ function AccountMenu() {
                 <div className="dropdown-menu">
                     <div className="dropdown-menu-header">
                         <div className="dropdown-menu-header-title">
-                            <h3>{currentUser.username}</h3>
+                            <h3 className="user-text">{currentUser.username}</h3>
                         </div>
                         <div className="dropdown-menu-header-close" onClick={toggleMenu}>
                             <i className="fas fa-times"></i>

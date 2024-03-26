@@ -12,6 +12,8 @@ import PaletteGallery from "./PaletteGallery";
 import UserProfile from "./UserProfile";
 import AccountMenu from "./home_components/AccountMenu";
 import PaletteDetails from "./paletteGallery_components/PaletteDetails";
+import UserSettings from "./user_components/UserSettings";
+import Header from "./Header";
 
 function App() {
 
@@ -35,8 +37,8 @@ function App() {
       <UserContext.Provider value={{login, setLogin, logout, setLogout, currentUser, setCurrentUser}}>
         <div className="App">
           <BrowserRouter>
+          <Header />
             <Navbar />
-            <AccountMenu />
             <Routes>
               <Route path="/signup" element={<UserSignup />} />
               <Route path="/login" element={<UserLogin />} />
@@ -47,6 +49,7 @@ function App() {
               <Route path="/palettes/:id" element={<PaletteDetails/>} />
               <Route path="/users/:id" element={<UserProfile />}/>
               <Route path="/logout" element={<AccountMenu />} />
+              <Route path="/user-settings" element={<UserSettings />} />
             </Routes>
           </BrowserRouter>
         </div>

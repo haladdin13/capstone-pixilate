@@ -83,11 +83,12 @@ function Home() {
 
 
     return (
-        <div>
-            <h1>Home</h1>
+    <div className="main-content">
+        <div >
+            <div className="main-content-h1"><h1>Home</h1></div>
             <h2>Recent Palettes</h2>
             {recentPalettes.map(palette => (
-                <div key={palette.id}>
+                <div key={palette.id} className="palette-item">
                     <Link to={`/palettes/${palette.id}`}>
                         <h2>{palette.title}</h2>
                     </Link>
@@ -97,7 +98,7 @@ function Home() {
             ))}
             <h2>Recommended Palettes</h2>
             {recommendedPalettes.map(palette => (
-                <div key={palette.id}>
+                <div key={palette.id} className="palette-item">
                     <Link to={`/palettes/${palette.id}`}>
                         <h2>{palette.title}</h2>
                     </Link>
@@ -106,6 +107,7 @@ function Home() {
                 </div>
             ))}
         </div>
+    </div>
     )
 }
 

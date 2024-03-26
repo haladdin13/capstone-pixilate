@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import PaletteRenderer from "./PaletteRenderer";
 import { useUser } from "../UserContext";
 import { normalizePaletteColors } from "../Utils";
+import UserProfile from "../UserProfile";
 
 function PaletteDetails() {
   const { id } = useParams();
   const [palette, setPalette] = useState(null);
+  const [owner, setOwner] = useState(null);
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useUser();
 
@@ -29,6 +31,7 @@ function PaletteDetails() {
                 console.log(paletteData.user.id)
                 paletteData = normalizePaletteColors(paletteData)
                 setPalette(paletteData);
+                setOwner(paletteData.user);
                 
             } catch (error) {
                 console.error("Fetching palettes and colors failed:", error);
@@ -55,15 +58,18 @@ function PaletteDetails() {
 
   return (
     <div>
-      <h1>{palette.title}</h1>
-      <p>{palette.description}</p>
-      <PaletteRenderer palette={palette} />
-      {palette.user.id === currentUser.id && (
-        <>
-          <button onClick={() => navigate(`/palette-creator/${id}`)}>Edit Palette</button>
-          <button onClick={handleDelete}>Delete Palette</button>
-        </>
-      )}
+        <h1>{palette.title}</h1>
+        <Link to={`/users/${owner.id}`} >
+            <h3>Creator: {owner.username}</h3>
+        </Link>
+        <p>{palette.description}</p>
+        <PaletteRenderer palette={palette} />
+        {palette.user.id === currentUser.id && (
+            <>
+                <button onClick={() => navigate(`/palette-creator/${id}`)}>Edit Palette</button>
+                <button onClick={handleDelete}>Delete Palette</button>
+            </>
+        )}
     </div>
   );
 }
