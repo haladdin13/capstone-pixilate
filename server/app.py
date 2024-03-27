@@ -28,7 +28,8 @@ class Signup(Resource):
         try:
             user = User(
                 username=json['username'],
-                email=json['email']
+                email=json['email'],
+                user_avatar=json['user_avatar']
             )
             user.password_hash = json['password']
             db.session.add(user)
@@ -143,9 +144,18 @@ api.add_resource(UserID, '/user/<int:id>', endpoint='user_id')
 class PaletteGallery(Resource):
     def get(self):
 
-        palette_list = [palette.to_dict() for palette in Palette.query.all()]
+        user_id = session.get('user_id')
+
+        if user_id:
+            palettes = Palette.query.filter(
+                (Palette.public == True) | (Palette.user_id == user_id)
+            ).all()
+
+        else:
+            palettes = Palette.query.filter_by(public=True).all()
         
-        response = make_response(palette_list, 200)
+        palette_data = [palette.to_dict() for palette in palettes]
+        response = make_response(palette_data, 200)
 
         return response
     

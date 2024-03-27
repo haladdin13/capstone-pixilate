@@ -116,17 +116,23 @@ function PaletteSubmission({ colors, title, description, tags, id, onClearColors
             })}
             onSubmit={onSubmit}
         >
+            {({values, handleChange}) => (
             <Form>
                 <PaletteSubTextInput name="title" type="text" placeholder="Title" />
                 <PaletteSubTextInput name="description" type="text" placeholder="Description" />
                 <PaletteSubTextInput name="tags" type="text" placeholder="Tags" />
                 <label>
-                    <input type="checkbox" name="public" />
-                    Public
+                    Public 
+                    {` ${values.public}`}
+                    <PaletteSubTextInput
+                        type="checkbox"
+                        name="public"
+                        />
                 </label>
                 <button type="submit">Submit</button>
             {isSubmitting && <div>Saving Palette...</div>}
             </Form>
+            )}
         </Formik>
     );
 }

@@ -68,6 +68,7 @@ function PaletteGallery() {
                         <h2>{palette.title}</h2>
                     </Link>
                     <p>{palette.description}</p>
+                    <p>Tags: {palette.tags}</p>
                     <PaletteRenderer palette={normalizePaletteColors(palette)} />
                 </div>
                  ))}

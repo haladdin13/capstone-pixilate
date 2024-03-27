@@ -10,6 +10,7 @@ const ColorWheel = ({ onColorSelect }) => {
 
     const [saturation, setSaturation] = useState(100)
     const [value, setValue] = useState(100)
+    const [app, setApp] = useState(null)
 
 
     
@@ -18,24 +19,26 @@ const ColorWheel = ({ onColorSelect }) => {
         
         const colorWheelLogic = async () => {
             // Create a PixiJS application.
-            const app = new Application();
+            const newApp = new Application();
             // Intialize the application.
-            await app.init({ background: '#f9f9f9', width: '800', height: '550' });
+            await newApp.init({ background: '#f9f9f9', width: '800', height: '550' });
 
-            if(containerRef.current) {
+            setApp(newApp);
+
+            if(containerRef.current && newApp.canvas) {
                 containerRef.current.innerHTML = ''
-                containerRef.current.appendChild(app.canvas);
+                containerRef.current.appendChild(newApp.canvas);
             }
 
-            app.stage.removeChildren();
+            newApp.stage.removeChildren();
             const graphics = new Graphics();
-            app.stage.addChild(graphics);
+            newApp.stage.addChild(graphics);
 
             // Rendering color wheel
             const radius = 250
             const center = {
-                x: app.screen.width / 2,
-                y: app.screen.height / 2
+                x: newApp.screen.width / 2,
+                y: newApp.screen.height / 2
             }
             const wheelThickness = 1
 
@@ -87,42 +90,58 @@ const ColorWheel = ({ onColorSelect }) => {
                 console.log(angleDegrees);
             
 
-            //Clear Color Wheel on page change
-            return () => {
-                if(app) {
-                    app.destroy(true, { children: true, texture: true, baseTexture: true });
-                }
-                if(containerRef.current && containerRef.current.contains(app.canvas)) {
-                    containerRef.current.removeChild(app.canvas);
-                }
-            };
             });
-
-
+            
+            return () => {
+                    console.log("Cleaning color wheel")
+                    newApp.destroy(true, { children: true, texture: true, baseTexture: true });
+            };
+            
         };
+        
+        const cleanUp = colorWheelLogic();
 
-        colorWheelLogic();
+        return () => {
+            cleanUp.then((cleanup) => cleanup && cleanup())
+        }
 
 
 }, [saturation, value])
 
+    const handleSaturationChange = (e) => {
+        e.preventDefault();
+        const newSaturation = parseInt(e.target.value, 10);
+        if (!isNaN(newSaturation) && newSaturation >= 0 && newSaturation <= 100) {
+            setSaturation(newSaturation);
+        }
+    };
+
+    const handleValueChange = (e) => {
+        e.preventDefault();
+        const newValue = parseInt(e.target.value, 10);
+        if (!isNaN(newValue) && newValue >= 0 && newValue <= 100) {
+            setValue(newValue);
+        }
+    };
+
     return (
+        <div className="color-wheel-controls">
         <div>
-            <div>
-                <h4>Saturation</h4>
-                <input type='range' min='0' max='100' value={saturation} onChange={(e) => setSaturation(e.target.value)} />
-                <h5>{saturation}</h5>
-            </div>
-            <div>
-                <h4>Value</h4>
-                <input type='range' min='0' max='100' value={value} onChange={(e) => setValue(e.target.value)} />
-                <h5>{value}</h5>
-            </div>
-            <div ref={containerRef} />
+            <label>
+                Saturation (%):
+                <input type="number" value={saturation} onChange={handleSaturationChange} min="0" max="1" />
+            </label>
         </div>
-    )
+        <div>
+            <label>
+                Value (%):
+                <input type="number" value={value} onChange={handleValueChange} min="0" max="1" />
+            </label>
+        </div>
+        <div ref={containerRef} />
+    </div>
+    );
+};
 
-
-}
 
 export default ColorWheel;

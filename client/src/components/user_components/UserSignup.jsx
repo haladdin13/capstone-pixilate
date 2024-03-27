@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {Formik, Form, useField} from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import ImageUpload from '../ImageUpload';
 
 //Formik setup for Signup Form
 function UserSignup(){
+
+    const [imgLink, setImgLink] = useState('')
 
     const navigate = useNavigate()
     
@@ -24,10 +27,12 @@ function UserSignup(){
     return(
         <div>
             <Formik
+            enableReinitialize
                 initialValues={{
                     username: '',
                     email: '',
-                    password: ''
+                    password: '',
+                    user_avatar: imgLink
                 }}
                 validationSchema={Yup.object({
                     username: Yup.string()
@@ -35,20 +40,26 @@ function UserSignup(){
                     email: Yup.string()
                     .required('Email is required'),
                     password: Yup.string()
-                    .required('<PASSWORD>')
+                    .required('<PASSWORD>'),
+                    user_avatar: Yup.string()
+                    .required('User Avatar is required')
+
                 })}
                 onSubmit={(values, { setSubmitting, resetForm }) => {
-                    
+                    const submissionValues = {
+                        ...values,
+                         user_avatar: imgLink
+                    }
                     fetch(`http://localhost:5555/signup`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(values)
+                        body: JSON.stringify(submissionValues)
                     })
                     .then(res => res.json())
-                    .then(values => {
-                        console.log(values)
+                    .then(submissionValues => {
+                        console.log(submissionValues)
                         navigate('/login')
                     })
                     .then( setSubmitting(false), resetForm() );
@@ -61,6 +72,8 @@ function UserSignup(){
                     <SignupTextInput type="text" name="username" label="Username" />
                     <SignupTextInput type="email" name="email" label="Email" />
                     <SignupTextInput type="password" name="password" label="Password" />
+                    <ImageUpload onSetImage={setImgLink} />
+                    {imgLink && <img src={imgLink} alt='Uploaded Image' />}
                     <button type="submit">Submit</button>
                 </Form>
             </Formik>

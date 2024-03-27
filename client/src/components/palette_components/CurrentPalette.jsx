@@ -79,6 +79,7 @@ function CurrentPalette({ colors, onAddColor, onRemoveColor, onClearColors}) {
         })();
 
     }, [colors])
+    
 
     return (
         <div>
