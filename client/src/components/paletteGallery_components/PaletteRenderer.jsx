@@ -1,9 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Application, Sprite, Container, Assets } from 'pixi.js';
 
-function PaletteRenderer({ palette }) {
+function PaletteRenderer({ palette, id }) {
     const containerRef = useRef(null);
     const mountedRef = useRef(true);
+    const [cloudinaryUrl, setCloudinaryUrl] = useState('');
+
+    console.log(id)
 
     useEffect(() => {
         
@@ -63,7 +66,49 @@ function PaletteRenderer({ palette }) {
         
     }, [palette])
 
-    return <div ref={containerRef} />;
+    //Convert to image and send it to cloudinary for download
+
+    const uploadToCloudinary = (blob) => {
+        const formData = new FormData();
+        formData.append('file', blob);
+        formData.append('upload_preset', 'palette-download');
+        formData.append('cloud_name', 'di4vwvyre'); //
+
+        fetch('https://api.cloudinary.com/v1_1/di4vwvyre/image/upload', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.secure_url) {
+                setCloudinaryUrl(data.secure_url);
+            }
+        })
+        .catch(err => console.error('Upload to Cloudinary failed:', err));
+    };
+
+    const handleCreateImage = () => {
+        const canvas = containerRef.current.querySelector('canvas');
+        if (canvas) {
+            canvas.toBlob(blob => {
+                uploadToCloudinary(blob);
+            }, 'image/png');
+        }
+    };
+
+    return (
+        <div>
+            {cloudinaryUrl && (
+                <div>
+                    <h4>Uploaded Image:</h4>
+                    <img src={cloudinaryUrl} alt="Uploaded to Cloudinary" style={{ maxWidth: '100%' }} />
+                    <p className="palette-link"><a href={cloudinaryUrl} target="_blank" rel="noopener noreferrer">Download</a></p>
+                </div>
+            )}
+            { id ? <button onClick={handleCreateImage}>Convert to Image</button> : ""}
+            <div ref={containerRef} />
+        </div>
+    )
 }
 
 export default PaletteRenderer;

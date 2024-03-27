@@ -70,7 +70,7 @@ function AccountMenu() {
     return (
         <div>
             <button onClick={toggleMenu} className="avatar-button" style={{ border: 'none', background: 'none' }}>
-                <img src={currentUser?.avatarUrl || '/default-avatar.png'} alt="User Avatar" className="user-avatar" />
+                <img src={currentUser.user_avatar || '/default-avatar.png'} alt="User Avatar" className="user-avatar" />
             </button>
 
             {isOpen && (

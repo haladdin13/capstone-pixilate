@@ -63,7 +63,7 @@ function PaletteDetails() {
             <h3>Creator: {owner.username}</h3>
         </Link>
         <p>{palette.description}</p>
-        <PaletteRenderer palette={palette} />
+        <PaletteRenderer palette={palette} id={id} />
         {palette.user.id === currentUser.id && (
             <>
                 <button onClick={() => navigate(`/palette-creator/${id}`)}>Edit Palette</button>
