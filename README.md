@@ -8,8 +8,7 @@ Pixilate is a web application designed for artists, designers, and anyone in bet
 - **Palette Creation:** Easily create and customize color palettes. Add colors from the color wheel or input hex codes directly.
 - **Palette Gallery:** Explore palettes created by other users. Use the search function to filter palettes by tags.
 - **Palette Export:** Export your palettes in various formats, making it easy to apply them in your projects.
-- **User Accounts:** Sign up to save your palettes, like and comment on others', and follow your favorite palette creators.
-
+- **User Accounts:** Sign up to save and edit your palettes.
 
 ## Built With
 
